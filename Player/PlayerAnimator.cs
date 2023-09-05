@@ -11,7 +11,7 @@ public class PlayerAnimator : MonoBehaviour
     void Start()
     {
         anim = GetComponent<Animator>();
-        pm = GetComponent<PlayerMovement>();
+        pm = FindObjectOfType<PlayerMovement>();
         sr = GetComponent<SpriteRenderer>();
     }
 

@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class CharacterSelector : MonoBehaviour
 {
-   public static CharacterSelector instance;
+   public static CharacterSelector _instance;
     public CharacterScriptableObject characterData;
 
     private void Awake()
     {
-        if (instance == null)
+        if (_instance == null)
         {
-            instance = this;
+            _instance = this;
             DontDestroyOnLoad(gameObject);
         }
 
@@ -24,7 +24,7 @@ public class CharacterSelector : MonoBehaviour
 
     public static CharacterScriptableObject GetData()
     {
-        return instance.characterData;
+        return _instance.characterData;
     }
 
     public void SelectCharacter(CharacterScriptableObject character)
@@ -33,7 +33,7 @@ public class CharacterSelector : MonoBehaviour
     }
     public void DestroySingleton()
     {
-        instance = null;
+        _instance = null;
         Destroy(gameObject);
     }
 }
