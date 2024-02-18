@@ -7,12 +7,14 @@ public class PlayerAnimator : MonoBehaviour
     Animator anim;
     PlayerMovement pm;
     SpriteRenderer sr;
+    
     // Start is called before the first frame update
     void Start()
     {
         anim = GetComponent<Animator>();
         pm = FindObjectOfType<PlayerMovement>();
         sr = GetComponent<SpriteRenderer>();
+       
     }
 
     // Update is called once per frame
@@ -27,7 +29,6 @@ public class PlayerAnimator : MonoBehaviour
         {
             anim.SetBool("Move" , false);
         }
-        
     }
     void SpriteDirectonChecker()
     {

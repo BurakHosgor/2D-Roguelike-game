@@ -23,7 +23,7 @@ public class PlayerMovement : MonoBehaviour
     {
         player = GetComponent<PlayerStats>();
         rb = GetComponent<Rigidbody2D>();
-        lastMovedVector = new Vector2(1, 0f);
+        lastMovedVector = new Vector2(0f, 0f);
     }
 
     // Update is called once per frame
@@ -39,7 +39,7 @@ public class PlayerMovement : MonoBehaviour
 
     void InputManagement()
     {
-        if (GameManager.Instance.isGameOver)
+        if (GameManager.instance.isGameOver)
         {
             return;
         }
@@ -57,7 +57,7 @@ public class PlayerMovement : MonoBehaviour
         else if (moveDir.y != 0) 
         { 
             lastVerticalVector = moveDir.y;
-            lastMovedVector = new Vector2(0, lastVerticalVector);
+            lastMovedVector = new Vector2(lastHorizontalVector, lastVerticalVector);
         }
         
         if (moveDir.x != 0 && moveDir.y != 0)
@@ -69,7 +69,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Move()
     {
-        if (GameManager.Instance.isGameOver)
+        if (GameManager.instance.isGameOver)
         {
             return;
         } 

@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-  public static GameManager Instance;
+  public static GameManager instance;
   public enum GameState
     {
         Gameplay,
@@ -19,24 +19,30 @@ public class GameManager : MonoBehaviour
     // Store the previous state of the game
     public GameState previousState;
 
+    [Header("Damage Text Settings")]
+    public Canvas damageTextCanvas;
+    public float textFontSize = 20;
+    public TMP_FontAsset textFont;
+    public Camera referenceCamera;
+
     [Header("Screens")]
     public GameObject pauseScreen;
     public GameObject resultScreen;
     public GameObject levelUpScreen;
 
     [Header("Current Stat Displays")]
-    public Text CurrentHealthDisplay;
-    public Text CurrentRecoveryDisplay;
-    public Text CurrentMoveSpeedDisplay;
-    public Text CurrentMightDisplay;
-    public Text CurrentProjectileSpeedDisplay;
-    public Text CurrentMagnetDisplay;
+    public TMP_Text currentHealthDisplay;
+    public TMP_Text currentRecoveryDisplay;
+    public TMP_Text currentMoveSpeedDisplay;
+    public TMP_Text currentMightDisplay;
+    public TMP_Text currentProjectileSpeedDisplay;
+    public TMP_Text currentMagnetDisplay;
 
     [Header("Results Screen Display")]
     public Image chosenCharacterImage;
-    public Text chosenCharacterName;
-    public Text levelReachedDisplay;
-    public Text timeSurvivedDisplay;
+    public TMP_Text chosenCharacterName;
+    public TMP_Text levelReachedDisplay;
+    public TMP_Text timeSurvivedDisplay;
     public List<Image> chosenWeaponsUI = new List<Image>(6);
     public List<Image> chosenPassiveItemsUI = new List<Image>(6);
 
@@ -44,33 +50,36 @@ public class GameManager : MonoBehaviour
     [Header("StopWatch")]
     public float timeLimit;
     float stopWatchTime;
-    public Text stopWatchDisplay;
+    public TMP_Text stopWatchDisplay;
 
 
     // flag to check if the game is over
     public bool isGameOver = false;
 
     // Flag to check if the player is choosing their upgrades
-    public bool choosingUpgrade;
+    public bool choosingUpgrade = false;
 
+    // Reference to the player's 
     public GameObject playerObject;
 
     void Awake()
     {
         //Warning Check to see if there is another singleton of this kind in the game
-        if (Instance == null)
+        if (instance == null)
         {
-            Instance = this;
+            instance = this;
         }
         else
         {
             Debug.Log("EXTRA" + this + "DELETED");
+            Destroy(gameObject);
         }
-        DisableScreen();
+        DisableScreens();
     }
 
     void Update()
     {
+        // Define the behaviour for each state
         switch (currentState)
         {
             case GameState.Gameplay:
@@ -106,6 +115,60 @@ public class GameManager : MonoBehaviour
                 Debug.LogWarning("State does not exist");
                 break;
         }
+    }
+
+    IEnumerator GenerateFloatingTextCoroutine(string text, Transform target, float duration = 1f, float speed = 50f)
+    {
+        // Start generating the floating text
+        GameObject textObj = new GameObject("Damage Floating Text");
+        RectTransform rect = textObj.AddComponent<RectTransform>();
+        TextMeshProUGUI tmPro = textObj.AddComponent<TextMeshProUGUI>();
+        tmPro.text = text;
+        tmPro.horizontalAlignment = HorizontalAlignmentOptions.Center;
+        tmPro.verticalAlignment = VerticalAlignmentOptions.Middle;
+        tmPro.fontSize = textFontSize;
+        if (textFont) tmPro.font = textFont;
+        rect.position = referenceCamera.WorldToScreenPoint(target.position);
+
+        // Makes sure this is destroyed after the duration finishes.
+        Destroy(textObj, duration);
+
+        // Parent the generated text object to the canvas
+        textObj.transform.SetParent(instance.damageTextCanvas.transform);
+
+        // Pan the text upwards and fade it away over time.
+        WaitForEndOfFrame w = new WaitForEndOfFrame();
+        float t = 0f;
+        float yOffset = 0;
+        while (t < duration)
+        {
+            
+            // Wait for a frame and update the time
+            yield return w;
+            t += Time.deltaTime;
+
+            // Fade the text to the right alpha value
+            tmPro.color = new Color(tmPro.color.r, tmPro.color.g, tmPro.color.b, 1 - t / duration);
+
+            // Pan the text upwards.
+            yOffset += speed * Time.deltaTime;
+            rect.position = referenceCamera.WorldToScreenPoint(target.position + new Vector3(0, yOffset));
+        }
+    }
+
+    public static void GenerateFloatingText(string text, Transform target, float duration = 1f, float speed = 1f)
+    {
+        // If the canvas is not set, end the function so we don't 
+        // generate any floating text.
+        if (!instance.damageTextCanvas) return;
+
+        // Find a relevant camera that we can use to convert the world
+        //position to a screen position.
+        if (!instance.referenceCamera) instance.referenceCamera = Camera.main;
+
+        instance.StartCoroutine(instance.GenerateFloatingTextCoroutine(
+            text, target, duration, speed
+            ));
     }
     //Define the method to change the state of the game
     public void ChangeState(GameState newState)
@@ -150,7 +213,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    void DisableScreen()
+    void DisableScreens()
     {
         pauseScreen.SetActive(false);
         resultScreen.SetActive(false);
@@ -168,7 +231,7 @@ public class GameManager : MonoBehaviour
         resultScreen.SetActive(true);
     }
 
-    public void AssignChosenCharacterUI(CharacterScriptableObject chosenCharacterData)
+    public void AssignChosenCharacterUI(CharacterData chosenCharacterData)
     {
         chosenCharacterImage.sprite = chosenCharacterData.Icon;
         chosenCharacterName.text = chosenCharacterData.Name;
@@ -222,7 +285,7 @@ public class GameManager : MonoBehaviour
 
         if(stopWatchTime >= timeLimit) 
         {
-            GameOver();
+            playerObject.SendMessage("Kill");
         }
     }
 
