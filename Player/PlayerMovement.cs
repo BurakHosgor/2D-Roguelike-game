@@ -1,9 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Terresquall;
 
 public class PlayerMovement : MonoBehaviour
 {
+
+    public const int DEFAULT_MOVESPEED = 2;
+
     // Movement
     [HideInInspector]
     public Vector2 moveDir;
@@ -43,9 +47,18 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         }
-
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveY = Input.GetAxisRaw("Vertical");
+        float moveX, moveY;
+        if (VirtualJoystick.CountActiveInstances() > 0 )
+        {
+            moveX = VirtualJoystick.GetAxisRaw("Horizontal");
+            moveY = VirtualJoystick.GetAxisRaw("Vertical");
+        }
+        else
+        {
+            moveX = Input.GetAxisRaw("Horizontal");
+            moveY = Input.GetAxisRaw("Vertical");
+        }
+        
 
         moveDir = new Vector2(moveX, moveY).normalized;
 
@@ -73,6 +86,6 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         } 
-        rb.velocity =new Vector2 (moveDir.x * player.CurrentMoveSpeed , moveDir.y * player.CurrentMoveSpeed);  
+        rb.velocity = moveDir * DEFAULT_MOVESPEED * player.Stats.moveSpeed;
     }
 }

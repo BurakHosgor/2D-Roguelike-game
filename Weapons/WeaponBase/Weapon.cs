@@ -64,23 +64,7 @@ public abstract class Weapon : Item
         this.data = data;
         currentStats = data.baseStats;
         movement = GetComponentInParent<PlayerMovement>();
-        currentCooldown = currentStats.cooldown;
-    }
-
-    protected virtual void Awake()
-    {
-        // Assign the stats early, as it will be used by other scripts later on.
-        if (data) currentStats = data.baseStats;
-
-    }
-    protected virtual void Start()
-    {
-        // Don't initialise the weapon if the weapon data is not assigned.
-        if(data)
-        {
-            Initialise(data);
-        }
-       
+        ActivateCooldown();
     }
 
     // Update is called once per frame
@@ -89,7 +73,7 @@ public abstract class Weapon : Item
         currentCooldown -= Time.deltaTime;
         if (currentCooldown <= 0f) // Once the cooldown becomes 0, attack
         {
-            Attack(currentStats.number);
+            Attack(currentStats.number + owner.Stats.amount);
         }
     }
 
@@ -111,7 +95,7 @@ public abstract class Weapon : Item
     // Lets us check whether this weapon can attack at this current moment.
     public virtual bool CanAttack()
     {
-        return currentCooldown <= 0f;
+        return currentCooldown <= 0;
     }
     
     // Performs an attack with weapon.
@@ -122,23 +106,50 @@ public abstract class Weapon : Item
         
         if (CanAttack())
         {
-            currentCooldown += currentStats.cooldown;
+            ActivateCooldown();
             return true;  
         }
         return false;
     }
 
-    // Gets the amount of damage that the weapon is supposed to deal.
+    // Gets the amount of damage that the weapon is supposed to deal.   
     // Factoring in the weapon's stats (including damage variance),
     // as well as the character's Might stat.
     public virtual float GetDamage()
     {
-        return currentStats.GetDamage() * owner.CurrentMight;
+        return currentStats.GetDamage() * owner.Stats.might;
     }
+
+    // Get the area, including modifications from the player's stats.
+    public virtual float GetArea()
+    {
+        return currentStats.area * owner.Stats.area;
+       
+    }
+
+   
+    
 
     // For retrieving the weapon's stats.
 
     public virtual Stats GetStats() { return currentStats;}
+
+    // Refreshes the cooldown of the weapon, only if
+    // it is less than 0 
+    public virtual bool ActivateCooldown(bool strict = false)
+    {
+        // When <strict> is enabled and the cooldown is not yet finished,
+        // do not refresh the cooldown.
+        if (strict && currentCooldown > 0) return false;
+        // Calculate what the cooldown is going to be, factoring in the cooldown
+        // reduction stat in the player character.
+        float actualCooldown = currentStats.cooldown * Owner.Stats.cooldown;
+        // Limit the maximum cooldown to the actual cooldown, so we cannot increase
+        // the cooldown above the cooldown stat if we accidentaly call this function
+        // multiple times
+        currentCooldown = Mathf.Min(actualCooldown, currentCooldown + actualCooldown);
+        return true;
+    }
 }
 
 

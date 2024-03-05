@@ -1,5 +1,5 @@
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
+
 
 public class WhipWeapon : ProjectileWeapon
 {
@@ -11,6 +11,7 @@ public class WhipWeapon : ProjectileWeapon
         if (!currentStats.projectilePrefab)
         {
             Debug.LogWarning(string.Format("Projectile prefab has not been set for {0}", name));
+            ActivateCooldown(true);
             currentCooldown = data.baseStats.cooldown;
             return false;
         }
@@ -33,7 +34,7 @@ public class WhipWeapon : ProjectileWeapon
             owner.transform.position + (Vector3)(spawnOffset),
             Quaternion.identity
         );
-
+        prefab.owner = owner; // Set ourselves to be the owner.
 
         // Flip the projectile's particle system sprite.
         if (spawnDir < 0)
@@ -72,13 +73,12 @@ public class WhipWeapon : ProjectileWeapon
 
         // Assign the stats.
         prefab.weapon = this;
-        prefab.owner = owner;
-        currentCooldown += currentStats.cooldown;
+        ActivateCooldown(true);
         attackCount--;
 
         // Determine where the next projectile should spawn.
         currentSpawnCount++;
-        if (currentSpawnCount > 2 && currentSpawnCount % 2 != 0)
+        if (currentSpawnCount > 1 && currentSpawnCount % 2 == 0)
             currentSpawnYOffset += 1;
 
 

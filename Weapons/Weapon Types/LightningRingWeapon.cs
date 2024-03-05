@@ -6,26 +6,26 @@ public class LightningRingWeapon : ProjectileWeapon
 {
     List<EnemyStats> allSelectedEnemies = new List<EnemyStats>();
 
-    public override bool CanAttack()
-    {
-        Debug.Log(string.Format("Lighting Ring can attack: {0}", base.CanAttack()));
-        return base.CanAttack();
-    }
+   
     protected override bool Attack(int attackCount = 1)
     {
         // If there is no projectile assigned, set the weapon on cooldown.
-        if (!currentStats.hitEffect || !CanAttack())
+        if (!currentStats.hitEffect)
         {
-            currentCooldown = data.baseStats.cooldown;
+            Debug.LogWarning(string.Format("Hit effect prefab has not been set for cooldown."));
+            ActivateCooldown(true);
             return false;
         }
+
+        // If there is no projectile assigned, set the weapon on cooldown.
+        if (!CanAttack()) return false;
 
         // If the cooldown is less than 0, this is the first firing of the weapon.
         // Refresh the array of selected enemies.
         if (currentCooldown <= 0)
         {
             allSelectedEnemies = new List<EnemyStats>(FindObjectsOfType<EnemyStats>());
-            currentCooldown = currentStats.cooldown;
+            ActivateCooldown();
             currentAttackCount = attackCount;
         }
             
@@ -36,7 +36,7 @@ public class LightningRingWeapon : ProjectileWeapon
         if (target)
         {
             
-            DamageArea(target.transform.position, currentStats.area, currentStats.damage + Random.Range(0, currentStats.damageVariance));
+            DamageArea(target.transform.position, GetArea(), currentStats.damage + Random.Range(0, currentStats.damageVariance));
             Instantiate(currentStats.hitEffect, target.transform.position, Quaternion.identity);
         }
         // If we have more than 1 attack count.

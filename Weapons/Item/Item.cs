@@ -13,6 +13,8 @@ public class Item : MonoBehaviour
     protected PlayerInventory inventory;
     protected PlayerStats owner;
 
+    public PlayerStats Owner { get { return owner; } }
+
     public virtual void Initialise(ItemData data)
     {
         maxLevel = data.maxLevel;
@@ -22,8 +24,8 @@ public class Item : MonoBehaviour
 
         // We have to find a better way to reference the player inventory
         // in the future, as this is inefficient.
-        inventory = FindObjectOfType<PlayerInventory>();
-        owner = FindObjectOfType<PlayerStats>();
+        inventory = GetComponentInParent<PlayerInventory>();
+        owner = GetComponentInParent<PlayerStats>();
     }
 
     public virtual ItemData.Evolution[] CanEvolve()

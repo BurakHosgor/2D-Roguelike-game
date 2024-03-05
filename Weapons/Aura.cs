@@ -1,6 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -24,11 +23,12 @@ public class Aura : WeaponEffect
         Dictionary<EnemyStats, float> affectedTargsCopy = new Dictionary<EnemyStats, float>(affectedTargets);
         // Loop through every target affected by the aura, and reduce the cooldown
         // of the aura for it. if the cooldown reaches 0, deal damage to it. 
-        foreach(KeyValuePair<EnemyStats, float>pair  in affectedTargsCopy)
+        foreach(KeyValuePair<EnemyStats, float> pair  in affectedTargsCopy)
         {
             affectedTargets[pair.Key] -= Time.deltaTime;
+            
             // Reset the cooldown.
-            if(pair.Value <= 0)
+            if (pair.Value <= 0)
             {
                 if (targetsToUnaffect.Contains(pair.Key))
                 {
@@ -40,8 +40,9 @@ public class Aura : WeaponEffect
                 {
                     // Reset the cooldown and deal damage.
                     Weapon.Stats stats = weapon.GetStats();
-                    affectedTargets[pair.Key] = stats.cooldown;
+                    affectedTargets[pair.Key] = stats.cooldown * Owner.Stats.cooldown;
                     pair.Key.TakeDamage(GetDamage(), transform.position, stats.knockback);
+                    
                 }
                 
             }
@@ -64,7 +65,7 @@ public class Aura : WeaponEffect
             {
                 if (targetsToUnaffect.Contains(es))
                 {
-                    affectedTargets.Remove(es);
+                    targetsToUnaffect.Remove(es);
                 }
             }
 

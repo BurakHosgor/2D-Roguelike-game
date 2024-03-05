@@ -108,6 +108,8 @@ public class EnemyStats : MonoBehaviour
         Destroy(gameObject);
     }
 
+    
+
     private void OnTriggerStay2D(Collider2D col)
     {
         //Reference the script from the collided collider and deal damage using TakeDamage()
@@ -115,7 +117,9 @@ public class EnemyStats : MonoBehaviour
         {
             PlayerStats player = col.gameObject.GetComponent<PlayerStats>();
             player.TakeDamage(currentDamage);//Make sure to use currentDamage instead of weaponData.damage in case any damage multipliers in the future
+
         }
+        
     }
 
     private void OnDestroy()

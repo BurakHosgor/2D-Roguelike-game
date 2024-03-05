@@ -30,14 +30,6 @@ public class GameManager : MonoBehaviour
     public GameObject resultScreen;
     public GameObject levelUpScreen;
 
-    [Header("Current Stat Displays")]
-    public TMP_Text currentHealthDisplay;
-    public TMP_Text currentRecoveryDisplay;
-    public TMP_Text currentMoveSpeedDisplay;
-    public TMP_Text currentMightDisplay;
-    public TMP_Text currentProjectileSpeedDisplay;
-    public TMP_Text currentMagnetDisplay;
-
     [Header("Results Screen Display")]
     public Image chosenCharacterImage;
     public TMP_Text chosenCharacterName;
@@ -135,24 +127,32 @@ public class GameManager : MonoBehaviour
 
         // Parent the generated text object to the canvas
         textObj.transform.SetParent(instance.damageTextCanvas.transform);
+        textObj.transform.SetSiblingIndex(0);
 
         // Pan the text upwards and fade it away over time.
         WaitForEndOfFrame w = new WaitForEndOfFrame();
         float t = 0f;
         float yOffset = 0;
+        Vector3 lastKnownPosition = target.position;
         while (t < duration)
         {
+            // if the rect object is missing for whatever reason, terminate this loop.
+            if (!rect) break;
             
-            // Wait for a frame and update the time
-            yield return w;
-            t += Time.deltaTime;
-
             // Fade the text to the right alpha value
             tmPro.color = new Color(tmPro.color.r, tmPro.color.g, tmPro.color.b, 1 - t / duration);
 
+            // If target exist, then save its position.
+            if (target)
+                lastKnownPosition = target.position;
+
             // Pan the text upwards.
             yOffset += speed * Time.deltaTime;
-            rect.position = referenceCamera.WorldToScreenPoint(target.position + new Vector3(0, yOffset));
+            rect.position = referenceCamera.WorldToScreenPoint(lastKnownPosition + new Vector3(0, yOffset));
+
+            // Wait for a frame and update the time
+            yield return w;
+            t += Time.deltaTime;
         }
     }
 

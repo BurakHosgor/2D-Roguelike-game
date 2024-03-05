@@ -5,9 +5,17 @@ using UnityEngine;
 public class AuraWeapon : Weapon
 {
     protected Aura currentAura;
+    bool isEquip = false;
 
     // Update is called once per frame
-    protected override void Update() { }
+    protected override void Update()
+    {
+        if (isEquip)
+        {
+            float area = GetArea();
+            currentAura.transform.localScale = new Vector3(area, area, area);
+        }
+    }
 
     public override void OnEquip()
     {
@@ -18,7 +26,8 @@ public class AuraWeapon : Weapon
             currentAura = Instantiate(currentStats.auraPrefab, transform);
             currentAura.weapon = this;
             currentAura.owner = owner;
-            currentAura.transform.localScale = new Vector3(currentStats.area, currentStats.area, currentStats.area);
+            isEquip = true;
+            
         }
     }
 
